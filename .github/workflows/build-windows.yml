@@ -1,0 +1,29 @@
+name: Build JK Launcher GLOBAL
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npm run check
+      - run: npx electron-builder --win nsis portable --${{ matrix.arch }} --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JK-Launcher-GLOBAL-1.1.4-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
